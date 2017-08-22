@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.kumuluz.ee.samples</groupId>
+    <artifactId>kumuluzee-event-sourcing</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <modules>
+        <module>catalogue</module>
+        <module>orders</module>
+        <module>shipments</module>
+    </modules>
+    <packaging>pom</packaging>
+
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <kumuluzee-streaming-kafka.version>1.0.0-SNAPSHOT</kumuluzee-streaming-kafka.version>
+        <kumuluzee.version>2.3.0-SNAPSHOT</kumuluzee.version>
+    </properties>
+
+</project>
