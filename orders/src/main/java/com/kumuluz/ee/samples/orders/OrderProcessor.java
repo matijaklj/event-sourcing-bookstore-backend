@@ -2,10 +2,11 @@ package com.kumuluz.ee.samples.orders;
 
 import com.kumuluz.ee.samples.orders.entity.Keyword;
 import com.kumuluz.ee.samples.orders.fressian.FressianSerde;
+import com.kumuluz.ee.streaming.common.annotations.StreamProcessor;
+import com.kumuluz.ee.streaming.common.annotations.StreamProcessorController;
+import com.kumuluz.ee.streaming.kafka.utils.streams.StreamsController;
 import org.apache.kafka.common.serialization.Serde;
-import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;
-import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.apache.kafka.streams.processor.StateStoreSupplier;
@@ -14,11 +15,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Destroyed;
 import javax.enterprise.context.Initialized;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -27,44 +26,32 @@ import java.util.UUID;
  */
 @ApplicationScoped
 public class OrderProcessor {
+
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    private KafkaStreams kafkaStreams;
-
-    private String ordersEventsTopic;
+    private String ordersEventsTopic = "ordersEventsTopic";
 
     @Inject
     private OrderStore ordersStore;
 
-    private StreamsConfig kafkaStreamsConfig;
-
-    public void kafkaStreamsConfig() {
-        this.ordersEventsTopic = "ordersEventsTopic";
-        Map<String, Object> props = new HashMap<>();
-        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "order-processor");
-        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-
-        this.setKafkaStreamsConfig(new StreamsConfig(props));
-    }
-
-    public StreamsConfig getKafkaStreamsConfig() {
-        return kafkaStreamsConfig;
-    }
-
-    public void setKafkaStreamsConfig(StreamsConfig kafkaStreamsConfig) {
-        this.kafkaStreamsConfig = kafkaStreamsConfig;
-    }
+    @StreamProcessorController(id="orders-processor")
+    private StreamsController streams;
 
     public void startStream(@Observes @Initialized(ApplicationScoped.class) Object init) {
-        this.kafkaStreamsConfig();
-        this.startStreamProcessor();
+
+        Runtime.getRuntime().addShutdownHook(new Thread("streams-catalogue-shutdown-hook") {
+            @Override
+            public void run() {
+                streams.close();
+            }
+        });
+
+        streams.start();
+
     }
 
-    public void destroyStream(@Observes @Destroyed(ApplicationScoped.class) Object init) {
-        this.stopStreamProcessor();
-    }
-
-    public void startStreamProcessor() {
+    @StreamProcessor(id="orders-processor", autoStart = false)
+    public KStreamBuilder streamProcessorBuilder() {
         KStreamBuilder builder = new KStreamBuilder();
 
         Serde<UUID> keySerde = new FressianSerde();
@@ -83,12 +70,7 @@ public class OrderProcessor {
 
         shipmentEvents.process(ordersStore, "Orders");
 
-        this.kafkaStreams = new KafkaStreams(builder, kafkaStreamsConfig);
-        this.kafkaStreams.start();
-    }
-
-    public void stopStreamProcessor() {
-        this.kafkaStreams.close();
+        return builder;
     }
 
 }

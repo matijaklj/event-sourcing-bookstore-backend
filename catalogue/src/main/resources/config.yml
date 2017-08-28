@@ -1,4 +1,7 @@
 kumuluzee:
+  cors-filter:
+    servlet:
+      allow-origin: "*"
   streaming:
     kafka:
       producer:

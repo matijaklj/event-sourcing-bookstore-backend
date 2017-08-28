@@ -10,3 +10,10 @@ kumuluzee:
         buffer-memory: 33554432
         key-serializer: com.kumuluz.ee.samples.orders.fressian.FressianSerializer
         value-serializer: com.kumuluz.ee.samples.orders.fressian.FressianSerializer
+      streams:
+        bootstrap-servers: localhost:9092
+        application-id: orders-app
+        default-key-serde: com.kumuluz.ee.samples.orders.fressian.FressianSerde
+        default-value-serde: com.kumuluz.ee.samples.orders.fressian.FressianSerde
+        commit-interval-ms: 0
+        cache-max-bytes-buffering: 0

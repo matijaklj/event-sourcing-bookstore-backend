@@ -20,7 +20,18 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <kumuluzee-streaming-kafka.version>1.0.0-SNAPSHOT</kumuluzee-streaming-kafka.version>
-        <kumuluzee.version>2.3.0-SNAPSHOT</kumuluzee.version>
+        <kumuluzee.version>2.4.0-SNAPSHOT</kumuluzee.version>
+        <kumuluzee-cors.version>1.0.0-SNAPSHOT</kumuluzee-cors.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>sonatype-snapshots</id>
+            <name>Sonatype Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases><enabled>false</enabled></releases>
+            <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+    </repositories>
 
 </project>

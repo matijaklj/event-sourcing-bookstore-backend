@@ -56,6 +56,12 @@
             <version>0.11.0.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.kumuluz.ee.cors</groupId>
+            <artifactId>kumuluzee-cors</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+
         <!-- stuff from capitalone/cqrs-manager-for-distributed-reactive-services -->
         <dependency>
             <groupId>org.fressian</groupId>
@@ -64,6 +70,16 @@
         </dependency>
 
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>sonatype-snapshots</id>
+            <name>Sonatype Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases><enabled>false</enabled></releases>
+            <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>

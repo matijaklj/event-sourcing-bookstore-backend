@@ -1,26 +1,13 @@
-/*
- * Copyright 2016 Capital One Services, LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and limitations under the License.
- */
 
 package com.kumuluz.ee.samples.catalogue;
 
 import com.kumuluz.ee.samples.catalogue.entity.Keyword;
 import com.kumuluz.ee.samples.catalogue.fressian.FressianSerde;
+import com.kumuluz.ee.streaming.common.annotations.StreamProcessor;
+import com.kumuluz.ee.streaming.common.annotations.StreamProcessorController;
+import com.kumuluz.ee.streaming.kafka.utils.streams.StreamsController;
 import org.apache.kafka.common.serialization.Serde;
-import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;
-import org.apache.kafka.streams.StreamsConfig;
 
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
@@ -31,7 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Destroyed;
 import javax.enterprise.context.Initialized;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
@@ -43,49 +29,33 @@ import java.util.UUID;
 public class CommandProcessor {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    private KafkaStreams kafkaStreams;
-    private String commandsTopic;
-    private String bookEventsTopic;
-    private String booksTopic;
-    private String shipmentsEventsTopic;
-    private String ordersEventsTopic;
+    private String commandsTopic = "commandsTopic";
+    private String bookEventsTopic = "bookEventsTopic";
+    private String booksTopic = "booksTopic";
+    private String shipmentsEventsTopic = "shipmentsEventsTopic";
+    private String ordersEventsTopic = "ordersEventsTopic";
 
     @Inject
     private BookStore bookStore;
 
-    private StreamsConfig kafkaStreamsConfig;
-
-    public void kafkaStreamsConfig() {
-        this.commandsTopic = "commandsTopic";
-        this.bookEventsTopic = "bookEventsTopic";
-        this.booksTopic = "booksTopic";
-        this.shipmentsEventsTopic = "shipmentsEventsTopic";
-        this.ordersEventsTopic = "ordersEventsTopic";
-        Map<String, Object> props = new HashMap<>();
-        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "my-stream-processing-application");
-        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-
-        this.setKafkaStreamsConfig(new StreamsConfig(props));
-    }
-
-    public StreamsConfig getKafkaStreamsConfig() {
-        return kafkaStreamsConfig;
-    }
-
-    public void setKafkaStreamsConfig(StreamsConfig kafkaStreamsConfig) {
-        this.kafkaStreamsConfig = kafkaStreamsConfig;
-    }
+    @StreamProcessorController(id = "catalogue-stream-processor")
+    private StreamsController streams;
 
     public void startStream(@Observes @Initialized(ApplicationScoped.class) Object init) {
-        this.kafkaStreamsConfig();
-        this.startStreamProcessor();
+
+        Runtime.getRuntime().addShutdownHook(new Thread("streams-catalogue-shutdown-hook") {
+            @Override
+            public void run() {
+                streams.close();
+            }
+        });
+
+        streams.start();
     }
 
-    public void destroyStream(@Observes @Destroyed(ApplicationScoped.class) Object init) {
-        this.stopStreamProcessor();
-    }
+    @StreamProcessor(id = "catalogue-stream-processor", autoStart = false)
+    public KStreamBuilder streamProcessorBuilder() {
 
-    public void startStreamProcessor() {
         KStreamBuilder builder = new KStreamBuilder();
 
         Serde<UUID> keySerde = new FressianSerde();
@@ -145,7 +115,7 @@ public class CommandProcessor {
         booksEvents.filter((id, command) -> command.get(new Keyword("action")).equals(new Keyword("order-created")))
                 .through(keySerde, valSerde, ordersEventsTopic);
 
-        // TODO vrzi to vn, nepotreben se en korak
+        // TODO vrzi to vn, nepotreben se en korak ??
         KStream<UUID, Map> books = booksEvents
                 .map((id, event) -> {
                     log.info("New book event {}", event);
@@ -197,12 +167,7 @@ public class CommandProcessor {
                                        event.get(new Keyword("action")).equals(new Keyword("delete-book")))
                 .to(keySerde, valSerde, bookEventsTopic);
          */
-        this.kafkaStreams = new KafkaStreams(builder, kafkaStreamsConfig);
-        this.kafkaStreams.start();
-    }
-
-    public void stopStreamProcessor() {
-        this.kafkaStreams.close();
+        return builder;
     }
 
 }

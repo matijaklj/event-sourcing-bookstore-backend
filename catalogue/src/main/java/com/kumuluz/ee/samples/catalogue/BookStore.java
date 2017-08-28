@@ -2,25 +2,17 @@ package com.kumuluz.ee.samples.catalogue;
 
 import com.kumuluz.ee.samples.catalogue.entity.Book;
 import com.kumuluz.ee.samples.catalogue.entity.Keyword;
-import com.kumuluz.ee.samples.catalogue.producer.CommandProducer;
-import com.kumuluz.ee.streaming.common.annotations.StreamProducer;
-import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.Transformer;
 import org.apache.kafka.streams.kstream.TransformerSupplier;
-import org.apache.kafka.streams.processor.Processor;
 import org.apache.kafka.streams.processor.ProcessorContext;
-import org.apache.kafka.streams.processor.ProcessorSupplier;
 import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.util.*;
-
 /**
  * @author Matija Kljun
  */

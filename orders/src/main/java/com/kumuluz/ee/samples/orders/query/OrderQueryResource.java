@@ -35,6 +35,7 @@ public class OrderQueryResource {
     }
 
     @GET
+    @Path("/book")
     public Response getOrdersForBook(@QueryParam("bookId") UUID bookId) {
 
         List<Order> orders = orderStore.getOrders();

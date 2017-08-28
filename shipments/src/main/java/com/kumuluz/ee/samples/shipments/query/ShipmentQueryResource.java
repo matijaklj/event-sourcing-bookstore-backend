@@ -32,6 +32,7 @@ public class ShipmentQueryResource {
     }
 
     @GET
+    @Path("/book")
     public Response getShipmentsForBook(@QueryParam("bookId") UUID bookId) {
 
         List<Shipment> shipments = shipmentStore.getShipments();
